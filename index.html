@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Камера и сохранение кадра</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            background-color: #FF0000; /* Красный цвет фона */
+        }
+
+        video {
+            max-width: 100%;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .start-screen, .camera-screen, .preview-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <div class="start-screen">
+        <h1>Добро пожаловать!</h1>
+        <p>Нажмите кнопку, чтобы начать</p>
+        <button onclick="startCamera()">Начать</button>
+    </div>
+
+    <div class="camera-screen" style="display:none;">
+        <video id="video" autoplay playsinline></video>
+        <button id="captureButton" onclick="captureFrame()">Сделать кадр</button>
+    </div>
+
+    <div class="preview-screen" style="display:none;">
+        <img id="capturedImage" style="max-width: 100%; border: 2px solid #333; border-radius: 8px; margin-bottom: 10px;">
+        // <button id="sendToBotButton" onclick="sendToBot()">Отправить в бота</button>
+    </div>
+
+    <script>
+        let video;
+        let capturedImage;
+        let tg = window.Telegram.WebApp;
+        document.addEventListener('DOMContentLoaded', (event) => {
+            video = document.getElementById('video');
+            capturedImage = document.getElementById('capturedImage');
+
+            // Функция для запуска камеры
+            window.startCamera = function () {
+                document.querySelector('.start-screen').style.display = 'none';
+                document.querySelector('.camera-screen').style.display = 'flex';
+
+                // Получаем доступ к видео с камеры
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then((stream) => {
+                            video.srcObject = stream;
+                        })
+                        .catch((error) => {
+                            console.error('Ошибка при получении доступа к камере:', error);
+                        });
+                }
+            };
+
+            // Функция для сделать кадр
+            window.captureFrame = function () {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                // Устанавливаем размеры canvas такими же, как у видео
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                // Рисуем текущий кадр видео на canvas
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Показываем экран просмотра сделанного кадра
+                document.querySelector('.camera-screen').style.display = 'none';
+                document.querySelector('.preview-screen').style.display = 'flex';
+
+                // Отображаем сделанный кадр
+                capturedImage.src = canvas.toDataURL('image/png');
+            };
+
+            // Настройка основной кнопки
+            tg.MainButton.setText('Отправить фото');
+            tg.MainButton.show();
+            tg.MainButton.enable();
+
+            // Обработчик нажатия на основную кнопку
+            tg.onEvent('mainButtonClicked', function() {
+                // Здесь код для отправки фото
+                // Например, можно отправить данные в строковом виде
+                tg.sendData(capturedImage.src);
+            });
+
+        });
+    </script>
+</body>
+</html>
