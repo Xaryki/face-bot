@@ -52,7 +52,6 @@
 
     <div class="preview-screen" style="display:none;">
         <img id="capturedImage" style="max-width: 100%; border: 2px solid #333; border-radius: 8px; margin-bottom: 10px;">
-        // <button id="sendToBotButton" onclick="sendToBot()">Отправить в бота</button>
     </div>
 
     <script>
@@ -109,7 +108,7 @@
             tg.onEvent('mainButtonClicked', function() {
                 // Здесь код для отправки фото
                 // Например, можно отправить данные в строковом виде
-                tg.sendData(capturedImage.src);
+                tg.sendData(canvas.toDataURL('image/png'));
             });
 
         });
